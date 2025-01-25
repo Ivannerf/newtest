@@ -9,6 +9,7 @@
     body {
       margin: 0;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -18,12 +19,27 @@
     model-viewer {
       width: 100%;
       height: 100%;
+      margin-bottom: 20px;
+    }
+    #uploadButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    input[type="file"] {
+      display: none;
     }
   </style>
 </head>
 <body>
   <!-- Replace the src with your .glb file URL -->
   <model-viewer
+    id="modelViewer"
     src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
     ar
     ar-modes="webxr"
@@ -32,5 +48,20 @@
     environment-image="neutral"
     shadow-intensity="1">
   </model-viewer>
+  
+  <label for="file-upload" id="uploadButton">Upload your 3D model</label>
+  <input type="file" id="file-upload" accept=".glb" onchange="loadModel(event)" />
+
+  <script>
+    function loadModel(event) {
+      const modelViewer = document.getElementById('modelViewer');
+      const file = event.target.files[0];
+      
+      if (file) {
+        const url = URL.createObjectURL(file);
+        modelViewer.src = url;
+      }
+    }
+  </script>
 </body>
 </html>
