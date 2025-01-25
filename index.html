@@ -3,145 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Content with Model and Text in AR</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
-    import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/webxr/ARButton.js';
-
-    // Set up the WebGL renderer
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
-    renderer.xr.enabled = true;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Create a scene and camera
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-
-    // Add AR Button
-    const arButton = ARButton.createButton(renderer, {
-      requiredFeatures: ['hit-test'],
-    });
-    document.body.appendChild(arButton);
-
-    // Create a canvas and set a white background
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
-
-    // Function to draw rounded rectangle without a frame (no stroke)
-    function drawRoundedRect(ctx, x, y, width, height, radius) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-      ctx.fill(); // No stroke, just fill the inside
-    }
-
-    // Function to wrap text within a given width
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(' ');
-      let line = '';
-      let lines = [];
-
-      for (let i = 0; i < words.length; i++) {
-        let testLine = line + words[i] + ' ';
-        let testWidth = ctx.measureText(testLine).width;
-        
-        if (testWidth > maxWidth && i > 0) {
-          lines.push(line);  // Add the current line to the lines array
-          line = words[i] + ' '; // Start a new line with the current word
-        } else {
-          line = testLine; // Continue adding the word to the current line
-        }
-      }
-      
-      lines.push(line);
-
-      for (let j = 0; j < lines.length; j++) {
-        ctx.fillText(lines[j], x, y + (j * lineHeight));
-      }
-    }
-
-    // Set background color and draw a rounded rectangle (white, no stroke)
-    ctx.fillStyle = '#ffffff'; 
-    drawRoundedRect(ctx, 80, 80, 844, 844, 40);
-
-    // Set text color to black and draw text
-    ctx.fillStyle = '#000000';
-    ctx.font = '800 48px "Inter"';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Nike Pegasus Trail 4', 130, 150);
-    ctx.fillText('139 €', 130, 225);
-
-    ctx.fillStyle = '#000000';  
-    ctx.font = '300 30px "Inter"';  
-
-    const maxWidth = 700;
-    const lineHeight = 32;  
-
-    wrapText(ctx, 'Fast and stable trail running shoes with a slim fit...', 130, 300, maxWidth, lineHeight);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-
-    const material = new THREE.MeshBasicMaterial({
-      map: texture,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-
-    const geometry = new THREE.PlaneGeometry(0.8, 1);
-    const textMesh = new THREE.Mesh(geometry, material);
-    textMesh.position.set(0, 0, -1);
-    scene.add(textMesh);
-
-    const controller = renderer.xr.getController(0);
-    scene.add(controller);
-
-    function animate() {
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-      });
-    }
-
-    animate();
-  </script>
-
+  <title>View 3D Model with Draggable Text Panels</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
       background-color: #f0f0f0;
-      overflow: hidden;
+      font-family: Arial, sans-serif;
     }
-
-    #modelViewer {
+    model-viewer {
+      width: 100%;
+      height: 100%;
+    }
+    #uploadButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    
+    /* Styling for the white panel */
+    .text-panel {
       position: absolute;
-      top: 10%;
+      top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      width: 100%;
-      height: 70vh;
-      z-index: -1;  /* Place the model-viewer in the background */
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 18px;
+      text-align: center;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      width: 80%;
+      cursor: move;
+    }
+    
+    .text-panel p {
+      margin: 0;
     }
   </style>
 </head>
 <body>
-  <!-- 3D Model in AR -->
+  <!-- Initial Model from GitHub -->
   <model-viewer
     id="modelViewer"
     src="https://raw.githubusercontent.com/Ivannerf/newtest/4b30662e518da75f5b9b14fd4aaa65e9210dcf23/QqNs.glb"
@@ -153,15 +68,47 @@
     shadow-intensity="1">
   </model-viewer>
 
+  <div class="text-panel" id="panel1">
+    <p>This is a draggable panel!</p>
+  </div>
+  
   <label for="file-upload" id="uploadButton">Upload your 3D model</label>
   <input type="file" id="file-upload" accept=".glb" onchange="loadModel(event)" />
 
   <script>
+    // Make panels draggable
+    let draggedElement = null;
+
+    document.querySelectorAll('.text-panel').forEach(panel => {
+      panel.addEventListener('mousedown', function(e) {
+        draggedElement = panel;
+        let offsetX = e.clientX - panel.getBoundingClientRect().left;
+        let offsetY = e.clientY - panel.getBoundingClientRect().top;
+
+        function onMouseMove(moveEvent) {
+          if (draggedElement) {
+            draggedElement.style.left = (moveEvent.clientX - offsetX) + 'px';
+            draggedElement.style.top = (moveEvent.clientY - offsetY) + 'px';
+          }
+        }
+
+        function onMouseUp() {
+          draggedElement = null;
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+    });
+
     function loadModel(event) {
       const modelViewer = document.getElementById('modelViewer');
       const file = event.target.files[0];
       
       if (file) {
+        // Create a URL for the uploaded file
         const url = URL.createObjectURL(file);
         modelViewer.src = url;
       }
